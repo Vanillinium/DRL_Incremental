@@ -1,9 +1,6 @@
 # DRL_Incremental
  
 A game project for my Advanced Programming class.
-<<<<<<< Updated upstream
-Stay tuned. More will come later!
-=======
 --------------------
 
 v0.1: Added upgrade box.
@@ -13,4 +10,3 @@ In this game, you have to grind for DRL and strive for the scholarship! The more
 How to play: Click on the gray box. Each click grants 1 DRL.
 
 TODO: ECS and GameObject system.
->>>>>>> Stashed changes
