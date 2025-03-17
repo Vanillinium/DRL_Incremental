@@ -1,6 +1,6 @@
 #include "game.hpp"
 #include "TextureManager.hpp"
-#include "Resources.hpp"
+#include "Resources.cpp"
 using namespace std;
 
 // GAME INITIALIZING
@@ -123,23 +123,3 @@ void Game::clean(){ // self explantory
 bool Game::running(){ // self explantory
     return isRunning;
 }
-
-// MAIN FUNCT
-int MAX_FPS = 60;
-Game *game = nullptr;
-int main(int argc, char *argv[]){
-    game = new Game();
-
-    game->init("test", SDL_WINDOWPOS_CENTERED, SDL_WINDOWPOS_CENTERED, WIDTH, HEIGHT, false);
-    
-    while(game->running()){
-        SDL_Delay(1000/MAX_FPS);
-        game->handleEvents();
-        game->update();
-        game->render();
-    }
-
-    game->clean();
-
-    return 0;
-}   
