@@ -15,18 +15,25 @@ public:
 
     void init(const char* title, int xpos, int ypos, int wdth, int height, bool fullscreen);
     
+    // MAIN GAME COMPOMENTS
     void handleEvents();
     void update();
     void render();
     void clean();
-
     bool running();
 
-    SDL_Renderer *renderer;
-    SDL_Window *window;
+    void updateMoney();
 
 private:
-    // main variables
+    SDL_Window* window;
+    SDL_Renderer* renderer;
+    TTF_Font* smallFont;
+    TTF_Font* bigFont;
+    TTF_Font* standardFont;
+
+    Uint32 announcementStartTime;  
+    const Uint32 announcementDuration = 10000;
+
     bool isRunning;
 };
 

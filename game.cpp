@@ -1,5 +1,7 @@
 #include "game.hpp"
 #include "TextureManager.hpp"
+#include "FontManager.hpp"
+
 #include "Resources.cpp"
 using namespace std;
 
@@ -23,7 +25,23 @@ void Game::init(const char *title, int xpos, int ypos, int width, int height, bo
         if(renderer){
             SDL_SetRenderDrawColor(renderer, 255, 255, 255, 255);
             cout << "Renderer created successfully...\n"; // renderer successfully created
-        } 
+        }
+
+        // FONTS
+        if(TTF_Init() == 0){
+            cout << "Font library initialized successfully\n";
+        }
+
+        // PRELOAD TEXTURE
+        standardFont = FontManager::LoadFont("assets/GenJyuuGothic-Bold.ttf", 30);
+        smallFont = FontManager::LoadFont("assets/Nunito-ExtraLight.ttf", 24);
+        bigFont = standardFont = FontManager::LoadFont("assets/GenJyuuGothic-Bold.ttf", 48);
+
+        mainTextTexture = FontManager::RenderMainText(displayedText, standardFont, textColor, renderer, textRect);
+        
+        upgrade_box1 = TextureManager::LoadTexture("assets/upgrade_box1.png", renderer);
+        main_box = TextureManager::LoadTexture("assets/box.png", renderer);
+        bg = TextureManager::LoadTexture("assets/bg.jpg", renderer);
 
         // STATUS
         isRunning = true;
@@ -45,81 +63,132 @@ void Game::handleEvents(){ // events
         case SDL_QUIT:  // close button pressed
             isRunning = false; 
             break;
-        case SDL_MOUSEBUTTONDOWN: // mouse button is down
+
+        case SDL_MOUSEBUTTONDOWN: // event: for when <mouse button> is down.
+            // regular clicks
             if(SDL_PointInRect(&mousePosition, &rect_main_box)){
-                ClickedInBox = true;
+                isMainBoxClicked = true;
             }
+
             // upgrade 1
-            if(SDL_PointInRect(&mousePosition, &rect_special_box) && money >= 30 && !isClicked){
+            if(SDL_PointInRect(&mousePosition, &rect_upgrade_box1) && money >= 750 && !isBox1Clicked){
                 Upgrade1 = true;
-                money -= 30;
+                money -= 50;
             }
             break;
+
         default:
             break;
     }
-
 }
-void Game::update(){ // game updates
-    // click detection
-    if(ClickedInBox){
-        money = money + upgrade + 1;
-        cout << "Clicked! You currently have " << money <<"!\n";
-        ClickedInBox = false;
+
+void Game::updateMoney(){
+    stringstream ss;
+        
+    if (displayed_DRL == (int)displayed_DRL){
+        displayedText = "You currently have " + to_string((int)displayed_DRL) + " DRL";
     }
 
-    if(money >= 30 && !isClicked && !displayed){
-        cout << "You can now purchase the first upgrade!\n";
-        displayed = true;
-    }  
+    else{
+        ostringstream stream;
+        stream << fixed << setprecision(1) << displayed_DRL;
+        displayedText = "You currently have " + stream.str() + " DRL";
+    }
+}
 
-    if(Upgrade1 && !displayed2){
-        cout << "Upgraded! You get 2 more points per click!\n";
-        // NOTE: lam ham invalid nut bam
+void Game::update(){ // game updates
+    
+    // for each click:
+    if(isMainBoxClicked){
+        money = money + upgrade + 1;
+        displayed_DRL = (double) money / 10;
+
+        
+        updateMoney();
+        mainTextTexture = FontManager::RenderMainText(displayedText, standardFont, textColor, renderer, textRect);
+
+        textRect.x = (WIDTH - textRect.w) / 2;  
+        textRect.y = 500;  
+        // cout << "Clicked! You currently have " << fixed << setprecision(1) << displayed_DRL <<" DRL!\n";
+        isMainBoxClicked = false;
+    }
+
+    // for upgrade box 1:
+
+    // annoucement: can upgrade.
+    if(money >= 750 && !isBox1Clicked && !box1Annoucement_Displayed){
+        // cond:
+        // - drl is higher than 75 (money is 750).
+        // - the upgrade box has not been clicked before.
+        // - the annoucement has not been displayed before.
+        box1Annoucement_Displayed = true;
+
+        //display announcement
+        announcement =  "You can now purchase the first upgrade!\nThis upgrade will cost 5 DRL.\n";
+
+        announcementTextTexture = FontManager::RenderMultilineText(announcement, smallFont, textColor, renderer, announcementRect);
+        announcementStartTime = SDL_GetTicks();
+    }  
+    
+    // when clicked in the upgrade box.
+    if(Upgrade1 && !box1Clicked_Displayed){
+        updateMoney();
+        // +1/click -> +3/click
         upgrade = 2;
-        isClicked = true;
-        displayed2 = true;
+        isBox1Clicked = true;
+        box1Clicked_Displayed = true;
+
+        // display announcement
+        announcement = "Upgraded! You get 0.2 more DRL per click!\nDRL left: " + displayedText;
+        announcementTextTexture = FontManager::RenderMultilineText(announcement, smallFont, textColor, renderer, announcementRect);
+
+        announcementStartTime = SDL_GetTicks();
     }
 }
 
 void Game::render(){ // renderer
     SDL_RenderClear(renderer); //refresh renderer
+
 // all textures below
 
-    // const char* font = "assets/Nunito-ExtraLight.ttf";
-    // TTF_Font* loadFont = TTF_OpenFont(font, 24);
-    //     if(loadFont == NULL){
-    //         SDL_LogMessage(SDL_LOG_CATEGORY_APPLICATION, SDL_LOG_PRIORITY_ERROR, "Load font %s", TTF_GetError());
-    //     }
-    
-    // SDL_Color textColor = {255,255,255,255};
-    // const char* text = "Test";
-    // SDL_Texture* helloText = FontManager::LoadFont(font, 24, text, textColor, renderer);
-    // int textWidth, textHeight;
-    // SDL_QueryTexture(helloText, NULL, NULL, &textWidth, &textHeight);
-    // SDL_Rect textRect = {100, 100, textWidth, textHeight};
-    
-
-    special_box = TextureManager::LoadTexture("assets/special_box.png", renderer);
-    main_box = TextureManager::LoadTexture("assets/box.png", renderer);
-    bg = TextureManager::LoadTexture("assets/bg.jpg", renderer);
-
-    // SDL_RenderCopy(renderer, helloText, NULL, &textRect);
+    // BACKGROUND
     SDL_RenderCopy(renderer, bg, NULL , NULL);
-    SDL_RenderCopy(renderer, main_box, NULL , &rect_main_box);
-    SDL_RenderCopy(renderer, special_box, NULL , &rect_special_box);
-    SDL_RenderPresent(renderer);
 
-    // TTF_CloseFont(loadFont);
+    // OBJECTS
+    SDL_RenderCopy(renderer, main_box, NULL , &rect_main_box);
+    if(!isBox1Clicked && box1Annoucement_Displayed)
+    SDL_RenderCopy(renderer, upgrade_box1, NULL , &rect_upgrade_box1);
+
+    // that la 1 ngay tuyet voi lam mai deo biet hien chu tren man hinh kieu cac j
+    // TEXT
+        // ONLY LOAD WHEN UPDATING DRL
+    if(mainTextTexture) SDL_RenderCopy(renderer, mainTextTexture, NULL, &textRect);
+
+        // LOAD ANNOUNCEMENT ONLY FOR 10 SECONDS
+    if(SDL_GetTicks() - announcementStartTime < announcementDuration){
+        for (size_t i = 0; i < announcementTextTexture.size(); i++) {
+            SDL_RenderCopy(renderer, announcementTextTexture[i], NULL, &announcementRect[i]);
+        }
+    }
+    
+    // REFRESH
+    SDL_RenderPresent(renderer);
 }
 
 void Game::clean(){ // self explantory
+    
+    TTF_CloseFont(standardFont);
+    TTF_CloseFont(smallFont);
+    TTF_CloseFont(bigFont);
+    TTF_Quit();
+
     SDL_DestroyWindow(window);
     SDL_DestroyRenderer(renderer);
-    SDL_QUIT;
+    SDL_Quit();
     cout << "rip bozo\n";
 }
 
 bool Game::running(){ // self explantory
     return isRunning;
 }
+

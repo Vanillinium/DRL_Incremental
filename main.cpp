@@ -4,6 +4,7 @@ Game *game = nullptr;
 const int WIDTH = 800, HEIGHT = 600;
 
 int main(int argc, char *argv[]){
+    
     const int maxFPS = 60;
     const int frameDelay = 1000 / maxFPS;
 
