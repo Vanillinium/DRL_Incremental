@@ -7,7 +7,7 @@
 #include <bits/stdc++.h>
 using namespace std;
 
-class Game {
+class Game{
 
 public:
     Game();
@@ -22,7 +22,12 @@ public:
     void clean();
     bool running();
 
-    void updateMoney();
+    // OTHER FUNCTIONS
+    void updateMoneyText();
+    void moneyDecrease();
+    void reloadMainText();
+    void reloadAnnouncementText();
+    void gameOver();
 
 private:
     SDL_Window* window;
@@ -31,8 +36,22 @@ private:
     TTF_Font* bigFont;
     TTF_Font* standardFont;
 
+    // for click detection
+    SDL_Point mousePosition;
+
     Uint32 announcementStartTime;  
     const Uint32 announcementDuration = 10000;
+
+    Uint32 idleTime;
+    const Uint32 maxIdleTime = 5000;
+
+    Uint32 subtractedLast;
+    Uint32 subtractedStart;
+    const Uint32 subtractedInterval = 2500;
+
+    Uint32 dangerStart;
+    Uint32 dangerLast;
+    Uint32 dangerMax = 10000;
 
     bool isRunning;
 };

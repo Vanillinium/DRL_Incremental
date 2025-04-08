@@ -8,15 +8,11 @@ SDL_Color color = {255, 255, 0, 0};
 // main game compoments
 int money = 700;                                    // main currency
 double displayed_DRL = 0;                           // displayed DRL: /10 money
-string displayedText = "You currently have 70 DRL";
+int upgrade = 0;                                    // upgrade counter: 
+                                                    // formula: money = money + upgrade + 1
+int debuffedStateMoneySubtractAmount = 1;
 
-
-int upgrade = 0;            // upgrade counter: 
-                            // formula: money = money + upgrade + 1
-
-// for click detection
-SDL_Point mousePosition;
-
+bool inDanger;
 // for main box
     // texture
 SDL_Texture* main_box;
@@ -40,10 +36,15 @@ SDL_Color textColor = {255,255,255};
 
 SDL_Texture* mainTextTexture;
 vector <SDL_Texture*> announcementTextTexture;
-string announcement;
+SDL_Texture* randomTextTexture;
 
-SDL_Rect textRect;
-vector <SDL_Rect> announcementRect;
+string mainText = "You currently have 70 DRL";
+string announcementText = "";
+string randomText = "";
+
+SDL_Rect mainTextRect;
+vector <SDL_Rect> announcementTextRect;
+SDL_Rect randomTextRect;
 
 // other textures
 SDL_Texture* bg;
