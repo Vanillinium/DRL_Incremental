@@ -23,10 +23,19 @@ public:
     bool running();
 
     // OTHER FUNCTIONS
+    void decay(Uint32 now);
+    void forceDisable(Uint32 now);
+    void updateForceDisable(Uint32 now);
+    void overload(Uint32 now);
+
+    void clickedInBoxCheckCondition();
+    void box1CheckCondition();
+    void box2CheckCondition();
+
     void updateMoneyText();
-    void moneyDecrease();
     void reloadMainText();
     void reloadAnnouncementText();
+
     void gameOver();
 
 private:
@@ -39,19 +48,27 @@ private:
     // for click detection
     SDL_Point mousePosition;
 
+    // timer thingy
+
+    Uint32 now;
+
     Uint32 announcementStartTime;  
     const Uint32 announcementDuration = 10000;
 
     Uint32 idleTime;
-    const Uint32 maxIdleTime = 5000;
+    Uint32 maxIdleTime = 5000;
 
-    Uint32 subtractedLast;
+    Uint32 disableStart;
+    Uint32 disableMax = 5000;
+
     Uint32 subtractedStart;
-    const Uint32 subtractedInterval = 2500;
+    Uint32 subtractedInterval = 2500;
 
     Uint32 dangerStart;
-    Uint32 dangerLast;
     Uint32 dangerMax = 10000;
+
+    Uint32 counterStart;
+    Uint32 counterInterval = 1000;
 
     bool isRunning;
 };

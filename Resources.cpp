@@ -11,17 +11,20 @@ double displayed_DRL = 0;                           // displayed DRL: /10 money
 int upgrade = 0;                                    // upgrade counter: 
                                                     // formula: money = money + upgrade + 1
 int debuffedStateMoneySubtractAmount = 1;
+int clickCounter = 0;
+double CPS = 0;
 
 bool inDanger;
+
 // for main box
     // texture
 SDL_Texture* main_box;
 SDL_Rect rect_main_box = {(WIDTH - 325) / 2,300,325,100};
     // logic
 bool isMainBoxClicked = false;
+bool forceClickingDisabled = false;
 
-
-// for first upgrade box: 5 DRL
+// for first upgrade box: 85+ DRL, cost 25 DRL
     // texture
 SDL_Texture* upgrade_box1;
 SDL_Rect rect_upgrade_box1 = {(WIDTH - 325) / 2,100,325,100};
@@ -30,6 +33,17 @@ bool Upgrade1 = false;
 bool isBox1Clicked = false;
 bool box1Annoucement_Displayed = false;
 bool box1Clicked_Displayed = false;
+
+
+// for second upgrade box: 200+ DRL, cost 175 DRL
+    // texture
+SDL_Texture* upgrade_box2;
+SDL_Rect rect_upgrade_box2 = {(WIDTH - 325) / 2,100,325,100};
+    // logic
+bool Upgrade2 = false;
+bool isBox2Clicked = false;
+bool box2Annoucement_Displayed = false;
+bool box2Clicked_Displayed = false;
 
 // text
 SDL_Color textColor = {255,255,255};
