@@ -3,12 +3,14 @@
 #include "FontManager.hpp"
 
 #include "Resources.cpp"
+
 using namespace std;
 
 // GAME INITIALIZING
 Game::Game(){}
 Game::~Game(){}
 
+// MAIN MECHANICS
 void Game::reloadMainText(){
     if (mainTextTexture) SDL_DestroyTexture(mainTextTexture);
     mainTextTexture = FontManager::RenderText(mainText, standardFont, textColor, renderer, mainTextRect, 500);
@@ -18,7 +20,7 @@ void Game::reloadAnnouncementText(){
     for(auto& tex : announcementTextTexture){
         SDL_DestroyTexture(tex);
     }
-
+    announcementTextTexture.clear();
     announcementTextTexture = FontManager::RenderMultilineText(announcementText, smallFont, textColor, renderer, announcementTextRect, 50);
 }
 
@@ -73,7 +75,7 @@ void Game::overload(Uint32 now){
     if(now - counterStart >= counterInterval){
         CPS = (double) clickCounter / (double) (now - counterStart) * 1000;
 
-        if(CPS >= 7.5 && !forceClickingDisabled){
+        if(CPS >= CPSThreshold && !forceClickingDisabled){
             forceDisable(now);
         }
         counterStart = now;
@@ -84,9 +86,9 @@ void Game::overload(Uint32 now){
 
 void Game::box1CheckCondition(){
     // annoucement: can upgrade.
-    if(money >= 850 && !isBox1Clicked && !box1Annoucement_Displayed){
+    if(money >= 800 && !isBox1Clicked && !box1Annoucement_Displayed){
         // cond:
-        // - drl is higher than 85 (money is 850).
+        // - drl is higher than 80 (money is 800).
         // - the upgrade box has not been clicked before.
         // - the annoucement has not been displayed before.
         box1Annoucement_Displayed = true;
@@ -100,12 +102,14 @@ void Game::box1CheckCondition(){
     
     // when clicked in the upgrade box.
     if(Upgrade1 && !box1Clicked_Displayed){
-        // +0.1/click -> +0.3/click
+        // +0.1/click -> +0.5/click
         // - 25 DRL
-        upgrade = 2;
+        increment = 4;
         money -= 250;
         displayed_DRL = (double) money / 10;
-        debuffedStateMoneySubtractAmount = 3;
+
+        // money subtracted = 1 DRL
+        debuffedStateMoneySubtractAmount = 10;
 
         // update conds
         isBox1Clicked = true;
@@ -115,7 +119,7 @@ void Game::box1CheckCondition(){
         updateMoneyText();
        
         // display announcementText
-        announcementText = "Upgraded! You get 0.2 more DRL per click!\nDRL Decay has been increased.";
+        announcementText = "Upgraded! You get 0.5 DRL for every class you attended!\n\nDRL Decay has been activated.\nYou will got your DRL subtracted if you\nhaven't attended any classes for a while";
 
         reloadAnnouncementText();
         announcementStartTime = SDL_GetTicks();
@@ -126,13 +130,13 @@ void Game::box2CheckCondition(){
     // annoucement: can upgrade.
     if(money >= 1500 && !isBox2Clicked && !box2Annoucement_Displayed){
         // cond:
-        // - drl is higher than 150 (money is 1500).
+        // - drl is higher than 100 (money is 1000).
         // - the upgrade box has not been clicked before.
         // - the annoucement has not been displayed before.
         box2Annoucement_Displayed = true;
 
         //display announcementText
-        announcementText =  "You can now purchase the second upgrade!\nThis upgrade will cost 100 DRL.\n";
+        announcementText =  "You can now purchase the second upgrade!\nThis upgrade will cost 50 DRL.\n";
 
         reloadAnnouncementText();
         announcementStartTime = SDL_GetTicks();
@@ -140,12 +144,15 @@ void Game::box2CheckCondition(){
     
     // when clicked in the upgrade box.
     if(Upgrade2 && !box2Clicked_Displayed){
-        // +0.3/click -> +0.8/click
-        // - 100 DRL
-        upgrade = 7;
-        money -= 1000;
+        // +0.5/click -> +1/click
+        // - 50 DRL
+        increment = 10;
+        money -= 500;
         displayed_DRL = (double) money / 10;
-        debuffedStateMoneySubtractAmount = 5;
+
+        // CPS Cap -> 7.5CPS
+        // decay interval = 1.5s
+        CPSThreshold = 7.5;
         subtractedInterval = 1500;
 
         // update conds
@@ -156,7 +163,53 @@ void Game::box2CheckCondition(){
         updateMoneyText();
        
         // display announcementText
-        announcementText = "Upgraded! You get 0.5 more DRL per click!\nDRL Decay has been increased.";
+        announcementText = "Upgraded! You get 1 DRL for every class you attended!\n\nYou are now suffering from mental overload...\nYou won't be able to attend classes for\nawhile if you sessions are too rapid.";
+        reloadAnnouncementText();
+        announcementStartTime = SDL_GetTicks();
+    }
+}
+
+void Game::box3CheckCondition(){
+    // annoucement: can upgrade.
+    if(money >= 2500 && !isBox3Clicked && !box3Annoucement_Displayed){
+        // cond:
+        // - drl is higher than 250 (money is 2500).
+        // - the upgrade box has not been clicked before.
+        // - the annoucement has not been displayed before.
+        box3Annoucement_Displayed = true;
+
+        //display announcementText
+        announcementText =  "You can now purchase the third upgrade!\nThis upgrade will cost 225 DRL.\n";
+
+        reloadAnnouncementText();
+        announcementStartTime = SDL_GetTicks();
+    }  
+    
+    // when clicked in the upgrade box.
+    if(Upgrade3 && !box3Clicked_Displayed){
+        // +1/click -> +2click
+        // - 200 DRL
+        increment = 20;
+        money -= 2000;
+        displayed_DRL = (double) money / 10;
+
+        // money subtracted = 2 DRL
+        // subtract interval = 1s
+        debuffedStateMoneySubtractAmount = 20;
+        subtractedInterval = 1000;
+
+        // change danger threshold to 100 DRL instead of 70
+        dangerThreshold = 1250;
+
+        // update conds
+        isBox3Clicked = true;
+        box3Clicked_Displayed = true;
+
+        //update money displaying
+        updateMoneyText();
+       
+        // display announcementText
+        announcementText = "Upgraded! You are now getting 2 DRL per class attended!\nDRL Decay has gotten even stronger...\nFailing grade has been increased.";
 
         reloadAnnouncementText();
         announcementStartTime = SDL_GetTicks();
@@ -165,7 +218,7 @@ void Game::box2CheckCondition(){
 
 void Game::clickedInBoxCheckCondition(){
     if(isMainBoxClicked){
-        money = money + upgrade + 1;
+        money += increment;
         displayed_DRL = (double) money / 10;
 
         updateMoneyText();
@@ -173,18 +226,20 @@ void Game::clickedInBoxCheckCondition(){
         // reset idle counter when clicked
         idleTime = SDL_GetTicks();
 
+        // increase clicking counter
+        clickCounter++;
+        
         // reset clicking cond
         isMainBoxClicked = false;
 
-        // increase clicking counter
-        clickCounter++;
+        
     }
 }
 
 void Game::gameOver(){
     Uint32 now = SDL_GetTicks();
     
-    if(money < 699){
+    if(money < dangerThreshold){
         if(!inDanger){
             inDanger = true;
             dangerStart = now;
@@ -235,6 +290,7 @@ void Game::init(const char *title, int xpos, int ypos, int width, int height, bo
         mainTextTexture = FontManager::RenderText(mainText, standardFont, textColor, renderer, mainTextRect, 500);
         upgrade_box1 = TextureManager::LoadTexture("assets/upgrade_box1.png", renderer);
         upgrade_box2 = TextureManager::LoadTexture("assets/upgrade_box1.png", renderer);
+        upgrade_box3 = TextureManager::LoadTexture("assets/upgrade_box1.png", renderer);
         main_box = TextureManager::LoadTexture("assets/box.png", renderer);
         bg = TextureManager::LoadTexture("assets/bg.jpg", renderer);
 
@@ -265,12 +321,15 @@ void Game::handleEvents(){ // events
             }
 
             // upgrades
-            if(SDL_PointInRect(&mousePosition, &rect_upgrade_box1) && money >= 850 && !isBox1Clicked){
+            if(SDL_PointInRect(&mousePosition, &rect_upgrade_box1) && money >= 800 && !isBox1Clicked){
                 Upgrade1 = true;
             }
 
             if(SDL_PointInRect(&mousePosition, &rect_upgrade_box2) && money >= 1500 && !isBox2Clicked){
                 Upgrade2 = true;
+            }
+            if(SDL_PointInRect(&mousePosition, &rect_upgrade_box3) && money >= 2500 && !isBox3Clicked){
+                Upgrade3 = true;
             }
             break;
 
@@ -290,7 +349,7 @@ void Game::update(){ // game updates
     //  FOR UPGRADE BOX
     box1CheckCondition();
     box2CheckCondition();
-
+    box3CheckCondition();
     // check for idle: after 5 seconds, subtract [debuff amount] DRL/2.5s
     if(SDL_GetTicks() - idleTime >= maxIdleTime){
         decay(now);
@@ -319,7 +378,9 @@ void Game::render(){ // renderer
     if(!isBox2Clicked && box2Annoucement_Displayed){
         SDL_RenderCopy(renderer, upgrade_box2, NULL , &rect_upgrade_box2);
     }
-
+    if(!isBox3Clicked && box3Annoucement_Displayed){
+        SDL_RenderCopy(renderer, upgrade_box3, NULL , &rect_upgrade_box3);
+    }
     // that la 1 ngay tuyet voi lam mai deo biet hien chu tren man hinh kieu cac j
     // TEXT
 
@@ -352,6 +413,7 @@ void Game::clean(){
     if(bg) SDL_DestroyTexture(bg);
     if(upgrade_box1) SDL_DestroyTexture(upgrade_box1);
     if(upgrade_box2) SDL_DestroyTexture(upgrade_box2);
+    if(upgrade_box3) SDL_DestroyTexture(upgrade_box3);
 
     // cleaning fonts
     if(standardFont) TTF_CloseFont(standardFont);
@@ -370,4 +432,5 @@ void Game::clean(){
 bool Game::running(){ // self explantory
     return isRunning;
 }
+
 
