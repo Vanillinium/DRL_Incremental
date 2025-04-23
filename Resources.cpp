@@ -1,4 +1,4 @@
-#include "Resources.hpp"
+#include "game.hpp"
 using namespace std;
 
 // window
@@ -6,11 +6,12 @@ const int WIDTH = 800, HEIGHT = 600;
 SDL_Color color = {255, 255, 0, 0};
 
 // main game compoments
-int money = 700;                                    // main currency
-double displayed_DRL = 0;                           // displayed DRL: /10 money
-int increment = 1;                                 // formula: money = money + increment
+int money = 700;                                                            // main currency
+double displayed_DRL = 0;                                                   // displayed DRL: /10 money
+int increment[] = {1, 2, 5, 8, 10, 15, 20, 30, 50, 80, 100, 9999999};                // formula: money = money + increment
+int incrementIndex = 0;
 
-int debuffedStateMoneySubtractAmount = 1;
+int decaySubtractAmount = 1;
 
 int clickCounter = 0;
 double CPS = 0;
@@ -27,37 +28,23 @@ SDL_Rect rect_main_box = {(WIDTH - 325) / 2,300,325,100};
 bool isMainBoxClicked = false;
 bool forceClickingDisabled = false;
 
-// for first upgrade box: 85+ DRL, cost 25 DRL
+// for upgrade box
     // texture
-SDL_Texture* upgrade_box1;
-SDL_Rect rect_upgrade_box1 = {(WIDTH - 325) / 2,100,325,100};
+SDL_Texture* upgrade_box;
+SDL_Rect rect_upgrade_box = {(WIDTH - 325) / 2,100,325,100};
     // logic
-bool Upgrade1 = false;
-bool isBox1Clicked = false;
-bool box1Annoucement_Displayed = false;
-bool box1Clicked_Displayed = false;
+int upgradeThreshold[] = {750, 850, 1000, 1250, 1500, 2000, 3000, 4500, 6000, 10000, 99999999};
+int upgradeThresholdIndex = 0;
 
+int cost[] = {75, 200, 400, 750, 1000, 1500, 2000, 4000, 5500, 9000, 9999999};
+int costIndex = 0;
 
-// for second upgrade box: 100+ DRL, cost 50 DRL
-    // texture
-SDL_Texture* upgrade_box2;
-SDL_Rect rect_upgrade_box2 = {(WIDTH - 325) / 2,100,325,100};
-    // logic
-bool Upgrade2 = false;
-bool isBox2Clicked = false;
-bool box2Annoucement_Displayed = false;
-bool box2Clicked_Displayed = false;
+bool upgrade[] = {false, false, false, false, false, false, false, false, false, false, false};
+int upgradeIndex = 0;
 
-// for second upgrade box: 250+ DRL, cost 225 DRL
-    // texture
-SDL_Texture* upgrade_box3;
-SDL_Rect rect_upgrade_box3 = {(WIDTH - 325) / 2,100,325,100};
-    // logic
-bool Upgrade3 = false;
-bool isBox3Clicked = false;
-bool box3Annoucement_Displayed = false;
-bool box3Clicked_Displayed = false;
-
+bool isUpgradeBoxClicked = false;
+bool isUpgradeAvaliableAnnouncementDisplayed = false;
+bool isUpgradeBoxClickedDisplayed = false;
 
 // text
 SDL_Color textColor = {255,255,255};
