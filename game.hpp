@@ -29,11 +29,11 @@ public:
     void overload(Uint32 now);
 
     void clickedInBoxCheckCondition();
-    void box1CheckCondition();
-    void box2CheckCondition();
-    void box3CheckCondition();
-    // void box4CheckCondition();
-    // void box5CheckCondition();
+    void upgradeBoxCheckCondition();
+    void upgradeBoxReset();
+    
+    void upgradeLogics();
+    
     void updateMoneyText();
     void reloadMainText();
     void reloadAnnouncementText();
