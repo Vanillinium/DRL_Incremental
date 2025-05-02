@@ -1,6 +1,5 @@
 #include "FontManager.hpp"
-const int WIDTH = 800, HEIGHT = 600;
-
+#include "Resources.hpp"
 
 TTF_Font *FontManager::LoadFont(const std::string &filePath, int fontSize){
     TTF_Font* font = TTF_OpenFont(filePath.c_str(), fontSize);

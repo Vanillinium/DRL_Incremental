@@ -1,3 +1,4 @@
+#include "Resources.hpp"
 #include "game.hpp"
 using namespace std;
 
@@ -12,10 +13,10 @@ int increment[] = {1, 2, 5, 8, 10, 15, 20, 30, 50, 80, 100, 9999999};           
 int incrementIndex = 0;
 
 int decaySubtractAmount = 1;
-
+bool naturalDecay = true;
 int clickCounter = 0;
 double CPS = 0;
-int CPSThreshold = 999;
+double CPSThreshold = 999;
 
 bool inDanger;
 int dangerThreshold = 700;
@@ -64,6 +65,9 @@ SDL_Rect randomTextRect;
 // other textures
 SDL_Texture* bg;
 
+TTF_Font* smallFont;
+TTF_Font* bigFont;
+TTF_Font* standardFont;
 
 // timers
 

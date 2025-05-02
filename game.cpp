@@ -1,195 +1,13 @@
 #include "game.hpp"
 #include "TextureManager.hpp"
 #include "FontManager.hpp"
-
-#include "Resources.cpp"
+#include "Resources.hpp"
 
 using namespace std;
 
 // GAME INITIALIZING
 Game::Game(){}
 Game::~Game(){}
-
-// MAIN MECHANICS
-void Game::reloadMainText(){
-    if (mainTextTexture) SDL_DestroyTexture(mainTextTexture);
-    mainTextTexture = FontManager::RenderText(mainText, standardFont, textColor, renderer, mainTextRect, 500);
-}
-
-void Game::reloadAnnouncementText(){
-    for(auto& tex : announcementTextTexture){
-        SDL_DestroyTexture(tex);
-    }
-    announcementTextTexture.clear();
-    announcementTextTexture = FontManager::RenderMultilineText(announcementText, smallFont, textColor, renderer, announcementTextRect, 50);
-}
-
-void Game::updateMoneyText(){
-    stringstream ss;
-        
-    if (displayed_DRL == (int)displayed_DRL){
-        mainText = "You currently have " + to_string((int)displayed_DRL) + " DRL";
-    }
-
-    else{
-        ostringstream stream;
-        stream << fixed << setprecision(1) << displayed_DRL;
-        mainText = "You currently have " + stream.str() + " DRL";
-    }
-    reloadMainText();
-}
-
-void Game::decay(Uint32 now){
-
-    if(now - subtractedStart >= subtractedInterval){
-        money -= decaySubtractAmount;
-        displayed_DRL = (double) money / 10;
-
-        updateMoneyText();
-
-        subtractedStart = now;
-    }
-}
-
-void Game::forceDisable(Uint32 now){
-    if(!forceClickingDisabled){
-        forceClickingDisabled = true;
-        disableStart = SDL_GetTicks();
-
-        announcementText = "Overloaded!\nClicking disabled.";
-        reloadAnnouncementText();
-    }
-}
-
-void Game::updateForceDisable(Uint32 now){
-    if(forceClickingDisabled && now - disableStart >= disableMax){
-        forceClickingDisabled = false;
-
-        announcementText = "Clicking re-enabled!";
-        reloadAnnouncementText();
-    }
-}
-
-void Game::overload(Uint32 now){
-
-    if(now - counterStart >= counterInterval){
-        CPS = (double) clickCounter / (double) (now - counterStart) * 1000;
-
-        if(CPS >= CPSThreshold && !forceClickingDisabled){
-            forceDisable(now);
-        }
-        counterStart = now;
-        cout << "[overloadChecker] CPS : " << CPS << endl;
-        clickCounter = 0;
-    }
-}
-
-void Game::upgradeBoxCheckCondition(){
-    // annoucement: can upgrade.
-    if(money >= upgradeThreshold[upgradeThresholdIndex] && !isUpgradeBoxClicked && !isUpgradeAvaliableAnnouncementDisplayed){
-        isUpgradeAvaliableAnnouncementDisplayed = true;
-
-        //display announcementText
-        announcementText =  "You can now purchase the next upgrade\nwith your hard-earned DRL!";
-
-        reloadAnnouncementText();
-        announcementStartTime = SDL_GetTicks();
-    }  
-    
-
-    // when clicked in the upgrade box.
-    if(isUpgradeBoxClicked && !isUpgradeBoxClickedDisplayed){
-        // current upgrade: active
-        upgrade[upgradeIndex] = true;
-        // subtract money from current cost
-        money -= cost[costIndex];
-
-        // continuing to the next upgrade conditions: increment, upgrade, cost, threshold
-        incrementIndex++;
-        upgradeIndex++;
-        costIndex++;
-        upgradeThresholdIndex++;   
-
-        // DEBUGGER
-        cout        << "[nextUpgradeState] : upgradeIndex: " << upgradeIndex << endl 
-                    <<  "costIndex: " << costIndex << " | cost: " << cost[costIndex] << endl
-                    <<  "incrementIndex: " << incrementIndex << " | increment: " << increment[incrementIndex] << endl
-                    <<  "upgradeThresholdIndex: " << upgradeThresholdIndex << " | threshold: " << upgradeThreshold[upgradeThresholdIndex] << endl;
-        
-        // update money after subtracting
-        displayed_DRL = (double) money / 10;
-
-        // update conds
-        isUpgradeBoxClickedDisplayed = true;
-
-        //update money displaying
-        updateMoneyText();
-       
-        // display announcementText
-        announcementText = "Upgraded!";
-
-        reloadAnnouncementText();
-        announcementStartTime = SDL_GetTicks();
-    }
-}
-
-void Game::upgradeBoxReset(){       // reset the upgrade box's state once the next update level gets reached
-    if(money >= cost[costIndex] && isUpgradeBoxClickedDisplayed){
-        isUpgradeBoxClicked = false;
-        isUpgradeAvaliableAnnouncementDisplayed = false;
-        isUpgradeBoxClickedDisplayed = false;
-
-        // DEBUGGING
-        cout << "[upgradeBoxReset] Upgrade state resetted\n";
-    }
-}
-
-// void upgradeLogics(){
-//     if(upgrade[1]){
-
-//     }
-// }
-
-void Game::clickedInBoxCheckCondition(){
-    if(isMainBoxClicked){
-        money += increment[incrementIndex];
-        displayed_DRL = (double) money / 10;
-
-        updateMoneyText();
-
-        // reset idle counter when clicked
-        idleTime = SDL_GetTicks();
-
-        // increase clicking counter
-        clickCounter++;
-        
-        // reset clicking cond
-        isMainBoxClicked = false;
-    }
-}
-
-void Game::gameOver(){
-    Uint32 now = SDL_GetTicks();
-    
-    if(money < dangerThreshold){
-        if(!inDanger){
-            inDanger = true;
-            dangerStart = now;
-
-            if(randomTextTexture) SDL_DestroyTexture(randomTextTexture);
-            randomTextTexture = FontManager::RenderText("In danger.", bigFont, textColor, renderer, randomTextRect, 250);
-        }
-        
-        if(now - dangerStart >= dangerMax){
-            isRunning = false;
-        }
-    }
-
-    else{
-        dangerStart = 0;
-        inDanger = false;
-    }
-}
 
 void Game::init(const char *title, int xpos, int ypos, int width, int height, bool fullscreen){ // initializer
     if(SDL_Init(SDL_INIT_EVERYTHING) == 0){ // initialized successfully
@@ -277,9 +95,10 @@ void Game::update(){ // game updates
     upgradeBoxReset();
     upgradeBoxCheckCondition();
 
+    upgradeLogics();
 
-    // check for idle: after 5 seconds, subtract [debuff amount] DRL/2.5s
-    if(SDL_GetTicks() - idleTime >= maxIdleTime){
+    // check for idle: after maxIdleTime, subtract [debuff amount] DRL per decayInterval
+    if(SDL_GetTicks() - idleTime >= maxIdleTime && naturalDecay){
         decay(now);
     }
 
