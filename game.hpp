@@ -27,9 +27,17 @@ public:
 
     // MAIN MECHANICS
     void decay(Uint32 now);
+
     void forceDisable(Uint32 now);
     void updateForceDisable(Uint32 now);
+
     void overload(Uint32 now);
+
+    void leechSpawn();
+    void leechUpdate(Uint32 now);
+
+    void bonusMoney(Uint32 now);
+
 
     // TEXT HANDLING
     void updateMoneyText();
@@ -44,8 +52,9 @@ public:
     void upgradeBoxReset();
     void upgradeLogics();
     
-    // GAME OVER
-    void gameOver();
+    // RESULT
+    void gameOver(Uint32 now);
+    void gameWin(Uint32 now);
 
 private:
     SDL_Window* window;
