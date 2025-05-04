@@ -17,30 +17,39 @@ void Game::init(const char *title, int xpos, int ypos, int width, int height, bo
         int flags = 0; 
         if(fullscreen == true){flags = SDL_WINDOW_FULLSCREEN;} // fullscreen flag
 
-        window = SDL_CreateWindow("test", xpos, ypos, width, height, flags); 
-        if(window){cout << "Window created successfully...\n";} // window successfully created
+        window = SDL_CreateWindow("DRL Incremental", xpos, ypos, width, height, flags); 
+        if(window){cout << "[INIT] Window created successfully...\n";} // window successfully created
 
         // RENDERER
         renderer = SDL_CreateRenderer(window, -1,0);
         if(renderer){
             SDL_SetRenderDrawColor(renderer, 255, 255, 255, 255);
-            cout << "Renderer created successfully...\n"; // renderer successfully created
+            cout << "[INIT] Renderer created successfully...\n"; // renderer successfully created
         }
 
         // FONTS
         if(TTF_Init() == 0){
-            cout << "Font library initialized successfully\n";
+            cout << "[INIT] Font library initialized successfully\n";
         }
 
-        // PRELOAD TEXTURE
+        // PRELOADING TEXTURES
+            // FONT
         standardFont = FontManager::LoadFont("assets/GenJyuuGothic-Bold.ttf", 30);
         smallFont = FontManager::LoadFont("assets/Nunito-ExtraLight.ttf", 24);
         bigFont = FontManager::LoadFont("assets/GenJyuuGothic-Bold.ttf", 48);
-
+            // TEXT
         mainTextTexture = FontManager::RenderText(mainText, standardFont, textColor, renderer, mainTextRect, 500);
-        upgrade_box = TextureManager::LoadTexture("assets/upgrade_box1.png", renderer);
+            // TEXTURE
+        playButtonTexture = TextureManager::LoadTexture("assets/start_button.png", renderer);
+        quitButtonTexture = TextureManager::LoadTexture("assets/quit_button.png", renderer);
+        gameTitleTexture = TextureManager::LoadTexture("assets/title.png", renderer);
+        menuBackgroundTexture = TextureManager::LoadTexture("assets/menu_bg.png", renderer);
+        upgrade_box = TextureManager::LoadTexture("assets/upgrade_box1.png", renderer); 
         main_box = TextureManager::LoadTexture("assets/box.png", renderer);
+        leechTexture = TextureManager::LoadTexture("assets/leech.png", renderer);
         bg = TextureManager::LoadTexture("assets/bg.jpg", renderer);
+        gameOverBackgroundTexture = TextureManager::LoadTexture("assets/game_over.png", renderer);
+        winBackgroundTexture = TextureManager::LoadTexture("assets/win.png", renderer);
 
         // STATUS
         isRunning = true;
@@ -63,33 +72,82 @@ void Game::handleEvents(){ // events
             break;
 
         case SDL_MOUSEBUTTONDOWN: // event: for when <mouse button> is down.
-            // regular clicks
-            if(SDL_PointInRect(&mousePosition, &rect_main_box) && !forceClickingDisabled){
-                
-                isMainBoxClicked = true;
-                cout << "[handleEvents] Main box clicked!" << endl;
-            break;
+            // MENU
+            if(currentGameState == MENU){
+                if(SDL_PointInRect(&mousePosition, &playButtonRect)){
+                    currentGameState = PLAYING;
+
+                    money = 700;
+                    displayed_DRL = (double)money / 10;
+                    updateMoneyText();
+
+                    cout << "[handleEvents] Play button clicked!" << endl;
+                }
+                else if(SDL_PointInRect(&mousePosition, &quitButtonRect)){
+                    isRunning = false;
+                    cout << "[handleEvents] Quit button clicked!" << endl;
+                }
             }
 
-            // upgrades
-            if(SDL_PointInRect(&mousePosition, &rect_upgrade_box) && money >= cost[costIndex] && !isUpgradeBoxClicked){
+            // INGAME
+
+            else if(currentGameState == PLAYING){
+                // regular clicks
+                if(SDL_PointInRect(&mousePosition, &rect_main_box) && !forceClickingDisabled){
                 
-                isUpgradeBoxClicked = true;
-                cout << "[handleEvents] Upgrade box clicked!" << endl;
-            break;
+                    isMainBoxClicked = true;
+                    // cout << "[handleEvents] Main box clicked!" << endl;
+
+                    break;
+                }
+
+                // upgrades
+                if(SDL_PointInRect(&mousePosition, &rect_upgrade_box) && money >= cost[costIndex] && !isUpgradeBoxClicked){
+                
+                    isUpgradeBoxClicked = true;
+                    cout << "[handleEvents] Upgrade box clicked!" << endl;
+
+                    break;
+                }
+
+                for(size_t i = 0; i < leechRects.size(); ++i){
+                    if(SDL_PointInRect(&mousePosition, &leechRects[i]) && !forceClickingDisabled){
+                        leechRects.erase(leechRects.begin() + i);
+                        leechCount--;
+
+                        cout << "[handleEvents] Leech clicked!" << endl;
+                        cout << "[leechChecker] Leech deleted!" << endl;
+                        cout << "[leechChecker] Leech count: " << leechCount << endl;
+
+                    break;
+                    }
+                }
             }
-        default:
-            break;
+
+            else if(currentGameState == GAME_OVER || currentGameState == WIN){
+                if (SDL_GetTicks() - resultEnterTime >= resultDelay){
+                    currentGameState = MENU;
+                }              
+            }
+
+        default: break;
     }
 }
 
 void Game::update(){ // game updates
     Uint32 now = SDL_GetTicks();
-    // force quit game :3 
-    gameOver();
+    // If game state != playing, do not update
+    if (currentGameState != PLAYING) return;
 
-    // for each click:
+    // change gamestate
+    gameWin(now);
+    gameOver(now);
+
+    // FOR EACH CLICK:
     clickedInBoxCheckCondition();
+
+    // FOR LEECH
+    leechUpdate(now);
 
     //  FOR UPGRADE BOX
     upgradeBoxReset();
@@ -102,9 +160,12 @@ void Game::update(){ // game updates
         decay(now);
     }
 
-    // force disable
+    // OVERLOAD
     overload(now);
     updateForceDisable(now);
+
+    // BONUS
+    bonusMoney(now);
 }
 
 void Game::render(){ // renderer
@@ -112,38 +173,64 @@ void Game::render(){ // renderer
 
 // all textures below
 
-    // BACKGROUND
-    SDL_RenderCopy(renderer, bg, NULL , NULL);
+    if(currentGameState == MENU){
+            // BG
+        SDL_RenderCopy(renderer, menuBackgroundTexture, NULL , NULL);
 
-    // OBJECTS
-    SDL_RenderCopy(renderer, main_box, NULL , &rect_main_box);
-
-    if(!isUpgradeBoxClicked && isUpgradeAvaliableAnnouncementDisplayed){
-        SDL_RenderCopy(renderer, upgrade_box, NULL , &rect_upgrade_box);
+            // TITLE
+        SDL_RenderCopy(renderer, gameTitleTexture, NULL , &gameTitleRect);
+    
+            // BUTTONS
+        SDL_RenderCopy(renderer, playButtonTexture, NULL , &playButtonRect);
+        SDL_RenderCopy(renderer, quitButtonTexture, NULL , &quitButtonRect);    
     }
 
-    // that la 1 ngay tuyet voi lam mai deo biet hien chu tren man hinh kieu cac j
-    // TEXT
+    else if(currentGameState == PLAYING){
+            // BACKGROUND
+        SDL_RenderCopy(renderer, bg, NULL , NULL);
 
-        // ONLY LOAD WHEN UPDATING
-    if(mainTextTexture) SDL_RenderCopy(renderer, mainTextTexture, NULL, &mainTextRect);
-    if(inDanger) SDL_RenderCopy(renderer, randomTextTexture, NULL, &randomTextRect);
+            // OBJECTS
+        SDL_RenderCopy(renderer, main_box, NULL , &rect_main_box);
 
-        // LOAD announcementText ONLY FOR 10 SECONDS
-    if(SDL_GetTicks() - announcementStartTime < announcementDuration){
-        for (size_t i = 0; i < announcementTextTexture.size(); i++) {
-            SDL_RenderCopy(renderer, announcementTextTexture[i], NULL, &announcementTextRect[i]);
+        if(!isUpgradeBoxClicked && isUpgradeAvaliableAnnouncementDisplayed){
+            SDL_RenderCopy(renderer, upgrade_box, NULL , &rect_upgrade_box);
+        }
+
+        for(const auto&rect : leechRects) {
+            SDL_RenderCopy(renderer, leechTexture, NULL, &rect);
+        }
+    
+        // that la 1 ngay tuyet voi lam mai deo biet hien chu tren man hinh kieu cac j
+            // TEXT
+                // ONLY LOAD WHEN UPDATING
+        if(mainTextTexture) SDL_RenderCopy(renderer, mainTextTexture, NULL, &mainTextRect);
+        if(inDanger) SDL_RenderCopy(renderer, randomTextTexture, NULL, &randomTextRect);
+
+                // LOAD announcementText ONLY FOR 10 SECONDS
+        if(SDL_GetTicks() - announcementStartTime < announcementDuration){
+            for (size_t i = 0; i < announcementTextTexture.size(); i++) {
+                SDL_RenderCopy(renderer, announcementTextTexture[i], NULL, &announcementTextRect[i]);
+            }
         }
     }
-    
+
+    else if(currentGameState == GAME_OVER){
+        SDL_RenderCopy(renderer, gameOverBackgroundTexture, NULL , NULL);
+    }
+
+    else if(currentGameState == WIN){
+        SDL_RenderCopy(renderer, winBackgroundTexture, NULL , NULL);
+    }
+
     // REFRESH
     SDL_RenderPresent(renderer);
 }
 
 void Game::clean(){
 
+
     // cleaning textures
-        // font
+        // text
     if(mainTextTexture) SDL_DestroyTexture(mainTextTexture);
     if(randomTextTexture) SDL_DestroyTexture(randomTextTexture);
     for(auto& tex : announcementTextTexture) {
@@ -153,6 +240,11 @@ void Game::clean(){
     if(main_box) SDL_DestroyTexture(main_box);
     if(bg) SDL_DestroyTexture(bg);
     if(upgrade_box) SDL_DestroyTexture(upgrade_box);
+    if(leechTexture) SDL_DestroyTexture(leechTexture);
+    if(playButtonTexture) SDL_DestroyTexture(playButtonTexture);
+    if(quitButtonTexture) SDL_DestroyTexture(quitButtonTexture);
+    if(gameTitleTexture) SDL_DestroyTexture(gameTitleTexture);
+    if(menuBackgroundTexture) SDL_DestroyTexture(menuBackgroundTexture);
 
     // cleaning fonts
     if(standardFont) TTF_CloseFont(standardFont);
