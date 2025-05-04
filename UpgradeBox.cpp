@@ -69,31 +69,21 @@ void Game::upgradeLogics(){ // TODO
         decaySubtractAmount = 5;
     }
     if(upgrade[2]){
-        dangerThreshold = 1000;
+        dangerThreshold = 800;
+        bonusMoneyMultiplier = 1;
     }
     if(upgrade[3]){
         decaySubtractAmount = 10;
     }
     if(upgrade[4]){
         CPSThreshold = 5;
-        // leech should appear here
+        leechMax = 5;
+        bonusMoneyMultiplier = 2.5;
     }
+    if(upgrade[5]){
+        leechSpawnInterval = 7500;
+        disableMax = 20000;
+    }
+
 }
 
-void Game::clickedInBoxCheckCondition(){
-    if(isMainBoxClicked){
-        money += increment[incrementIndex];
-        displayed_DRL = (double) money / 10;
-
-        updateMoneyText();
-
-        // reset idle counter when clicked
-        idleTime = SDL_GetTicks();
-
-        // increase clicking counter
-        clickCounter++;
-        
-        // reset clicking cond
-        isMainBoxClicked = false;
-    }
-}
