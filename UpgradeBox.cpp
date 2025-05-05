@@ -47,6 +47,10 @@ void Game::upgradeBoxCheckCondition(){
 
         reloadAnnouncementText();
         announcementStartTime = SDL_GetTicks();
+
+        // play sfx
+        Mix_PlayChannel(-1, upgradeSound, 0);
+
     }
 }
 
@@ -76,11 +80,11 @@ void Game::upgradeLogics(){ // TODO
         decaySubtractAmount = 10;
     }
     if(upgrade[4]){
-        CPSThreshold = 5;
         leechMax = 5;
         bonusMoneyMultiplier = 2.5;
     }
     if(upgrade[5]){
+        dangerThreshold = 1000;
         leechSpawnInterval = 7500;
         disableMax = 20000;
     }

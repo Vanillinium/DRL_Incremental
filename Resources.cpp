@@ -57,7 +57,7 @@ double CPS = 0;
 double CPSThreshold = 999;
 
 Uint32 clickCounterStart = 0;
-Uint32 clickCounterInterval = 1000;
+Uint32 const clickCounterInterval = 1000;
 
     // FORCE DISABLE   
 Uint32 disableStart = 0;
@@ -152,5 +152,19 @@ SDL_Rect randomTextRect;
 const Uint32 announcementDuration = 10000;
 Uint32 announcementStartTime = 0;
 
-//---------------OTHER TEXTURES-------------------//
+//------------------OTHER TEXTURES-------------------//
 SDL_Texture* bg;
+
+//---------------------MUSIC-------------------------//
+    // STATE
+GameState currentMusicState = MENU;
+    // MUSIC
+Mix_Music* bgMusic = nullptr;
+Mix_Music* menuMusic = nullptr;
+Mix_Music* gameOverMusic = nullptr;
+Mix_Music* winMusic = nullptr;
+
+    // SFX
+Mix_Chunk* clickSound = nullptr;
+Mix_Chunk* upgradeSound = nullptr;
+Mix_Chunk* leechAppearSound = nullptr;

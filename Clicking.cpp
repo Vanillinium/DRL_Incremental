@@ -17,7 +17,12 @@ void Game::clickedInBoxCheckCondition(){
         // adding in bonus money counter 
         moneyCounter += increment[incrementIndex];
 
+        // play sfx
+        Mix_PlayChannel(-1, clickSound, 0);
+        Mix_VolumeChunk(clickSound, 40);
+
         // reset clicking cond
         isMainBoxClicked = false;
+
     }
 }

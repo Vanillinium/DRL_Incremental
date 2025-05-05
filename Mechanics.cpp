@@ -84,9 +84,15 @@ void Game::leechUpdate(Uint32 now){
     if(now - leechSpawnStart >= leechSpawnInterval && leechCount < leechMax){
         leechSpawn();
 
+        // play sfx
+        Mix_PlayChannel(-1, leechAppearSound, 0);
+
+        
+        // DEBUGGER
         cout << "[leechChecker] Leech spawned!" << endl;
         cout << "[leechChecker] Leech count: " << leechCount << endl;
 
+        // reset counter
         leechSpawnStart = now;
     }
 

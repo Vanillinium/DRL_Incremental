@@ -28,7 +28,7 @@ extern SDL_Texture* menuBackgroundTexture;
 extern SDL_Texture* gameOverBackgroundTexture;
 
 
-//---------------------------WWIN---------------------------------//
+//----------------------------WIN---------------------------------//
 extern SDL_Texture* winBackgroundTexture;
 
 //---------------------------MONEY ------------------------------//
@@ -56,7 +56,7 @@ extern double CPS;
 extern double CPSThreshold;
 
 extern Uint32 clickCounterStart;
-extern Uint32 clickCounterInterval;
+extern const Uint32 clickCounterInterval;
 
     // FORCE DISABLE
 extern Uint32 disableStart;
@@ -151,6 +151,20 @@ extern Uint32 announcementStartTime;
 
 //---------------OTHER TEXTURES-------------------//
 extern SDL_Texture* bg;
+
+//---------------------MUSIC-------------------------//
+    // GAME STATE
+extern GameState currentMusicState;
+    // BGM
+extern Mix_Music* bgMusic;
+extern Mix_Music* menuMusic;
+extern Mix_Music* gameOverMusic;
+extern Mix_Music* winMusic;
+
+    // SFX
+extern Mix_Chunk* clickSound;
+extern Mix_Chunk* upgradeSound;
+extern Mix_Chunk* leechAppearSound;
 
 
 

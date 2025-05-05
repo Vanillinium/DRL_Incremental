@@ -1,6 +1,7 @@
 #include "game.hpp"
 #include "TextureManager.hpp"
 #include "FontManager.hpp"
+#include "AudioManager.hpp"
 #include "Resources.hpp"
 
 using namespace std;
@@ -32,24 +33,43 @@ void Game::init(const char *title, int xpos, int ypos, int width, int height, bo
             cout << "[INIT] Font library initialized successfully\n";
         }
 
+        if(Mix_Init(MIX_INIT_MP3 | MIX_INIT_OGG) != 0){
+            cout << "[INIT] Mixer library initialized successfully\n";
+        }
+
+        if(Mix_OpenAudio(44100, MIX_DEFAULT_FORMAT, 2, 2048) >= 0){
+            cout << "[INIT] Mixer open audio successfully\n";
+        }
+
         // PRELOADING TEXTURES
             // FONT
-        standardFont = FontManager::LoadFont("assets/GenJyuuGothic-Bold.ttf", 30);
-        smallFont = FontManager::LoadFont("assets/Nunito-ExtraLight.ttf", 24);
-        bigFont = FontManager::LoadFont("assets/GenJyuuGothic-Bold.ttf", 48);
+        standardFont = FontManager::LoadFont("assets/font/GenJyuuGothic-Bold.ttf", 30);
+        smallFont = FontManager::LoadFont("assets/font/Nunito-ExtraLight.ttf", 24);
+        bigFont = FontManager::LoadFont("assets/font/GenJyuuGothic-Bold.ttf", 48);
+
             // TEXT
         mainTextTexture = FontManager::RenderText(mainText, standardFont, textColor, renderer, mainTextRect, 500);
+
             // TEXTURE
-        playButtonTexture = TextureManager::LoadTexture("assets/start_button.png", renderer);
-        quitButtonTexture = TextureManager::LoadTexture("assets/quit_button.png", renderer);
-        gameTitleTexture = TextureManager::LoadTexture("assets/title.png", renderer);
-        menuBackgroundTexture = TextureManager::LoadTexture("assets/menu_bg.png", renderer);
-        upgrade_box = TextureManager::LoadTexture("assets/upgrade_box1.png", renderer); 
-        main_box = TextureManager::LoadTexture("assets/box.png", renderer);
-        leechTexture = TextureManager::LoadTexture("assets/leech.png", renderer);
-        bg = TextureManager::LoadTexture("assets/bg.jpg", renderer);
-        gameOverBackgroundTexture = TextureManager::LoadTexture("assets/game_over.png", renderer);
-        winBackgroundTexture = TextureManager::LoadTexture("assets/win.png", renderer);
+        playButtonTexture = TextureManager::LoadTexture("assets/img/start_button.png", renderer);
+        quitButtonTexture = TextureManager::LoadTexture("assets/img/quit_button.png", renderer);
+        gameTitleTexture = TextureManager::LoadTexture("assets/img/title.png", renderer);
+        menuBackgroundTexture = TextureManager::LoadTexture("assets/img/menu_bg.png", renderer);
+        upgrade_box = TextureManager::LoadTexture("assets/img/upgrade_box1.png", renderer); 
+        main_box = TextureManager::LoadTexture("assets/img/box.png", renderer);
+        leechTexture = TextureManager::LoadTexture("assets/img/leech.png", renderer);
+        bg = TextureManager::LoadTexture("assets/img/bg.jpg", renderer);
+        gameOverBackgroundTexture = TextureManager::LoadTexture("assets/img/game_over.png", renderer);
+        winBackgroundTexture = TextureManager::LoadTexture("assets/img/win.png", renderer);
+
+            // MUSIC
+        bgMusic = Mix_LoadMUS("assets/audio/bg1.mp3");
+        menuMusic = Mix_LoadMUS("assets/audio/bgmenu.mp3");
+
+            // SFX
+        clickSound = Mix_LoadWAV("assets/audio/click.wav");
+        leechAppearSound = Mix_LoadWAV("assets/audio/leechappear.wav");
+        upgradeSound = Mix_LoadWAV("assets/audio/upgrade.wav");
 
         // STATUS
         isRunning = true;
@@ -76,10 +96,42 @@ void Game::handleEvents(){ // events
             if(currentGameState == MENU){
                 if(SDL_PointInRect(&mousePosition, &playButtonRect)){
                     currentGameState = PLAYING;
-
+                    
+                    // reset game state
                     money = 700;
                     displayed_DRL = (double)money / 10;
+
+                    incrementIndex = 0;
+
+                    Uint32 maxIdleTime = 5000;
+                    decaySubtractAmount = 1;
+                    subtractedInterval = 2500;
+
+                    clickCounter = 0;
+                    CPS = 0;
+                    CPSThreshold = 999;
+
+                    disableMax = 5000;
+                    dangerThreshold = 700;
+
+                    dangerMax = 10000;
+
+                    leechCount  = 0;
+                    leechMax = 0;
+                    leechSubtractAmount = 15;
+                    leechSpawnInterval = 10000;
+                    leechSubtractInterval = 2500;
+
+                    MPS = 0;
+                    moneyCounter = 0;
+                    bonusMoneyMultiplier = 0;
+                    bonusMoneyInterval = 10000;
+
+
                     updateMoneyText();
+
+                    Mix_HaltMusic();
+                    Mix_PlayMusic(bgMusic, -1);
 
                     cout << "[handleEvents] Play button clicked!" << endl;
                 }
@@ -136,36 +188,42 @@ void Game::handleEvents(){ // events
 
 void Game::update(){ // game updates
     Uint32 now = SDL_GetTicks();
+
+    // bgm
+    AudioManager audio;
+    audio.playBGMForState(currentGameState);
+
     // If game state != playing, do not update
-    if (currentGameState != PLAYING) return;
+    if(currentGameState == PLAYING){
 
-    // change gamestate
-    gameWin(now);
-    gameOver(now);
+        // change gamestate
+        gameWin(now);
+        gameOver(now);
 
-    // FOR EACH CLICK:
-    clickedInBoxCheckCondition();
+        // FOR EACH CLICK:
+        clickedInBoxCheckCondition();
 
-    // FOR LEECH
-    leechUpdate(now);
+        // FOR LEECH
+        leechUpdate(now);
 
-    //  FOR UPGRADE BOX
-    upgradeBoxReset();
-    upgradeBoxCheckCondition();
+        //  FOR UPGRADE BOX
+        upgradeBoxReset();
+        upgradeBoxCheckCondition();
 
-    upgradeLogics();
+        upgradeLogics();
 
-    // check for idle: after maxIdleTime, subtract [debuff amount] DRL per decayInterval
-    if(SDL_GetTicks() - idleTime >= maxIdleTime && naturalDecay){
-        decay(now);
+        // check for idle: after maxIdleTime, subtract [debuff amount] DRL per decayInterval
+        if(SDL_GetTicks() - idleTime >= maxIdleTime && naturalDecay){
+            decay(now);
+        }
+
+        // OVERLOAD
+        overload(now);
+        updateForceDisable(now);
+
+        // BONUS
+        bonusMoney(now);
     }
-
-    // OVERLOAD
-    overload(now);
-    updateForceDisable(now);
-
-    // BONUS
-    bonusMoney(now);
 }
 
 void Game::render(){ // renderer
@@ -257,11 +315,12 @@ void Game::clean(){
     if(renderer) SDL_DestroyRenderer(renderer);
     if(window) SDL_DestroyWindow(window);
 
+    // cleaning music
+    Mix_CloseAudio();
+
     SDL_Quit();
 }
 
 bool Game::running(){ // self explantory
     return isRunning;
 }
-
-

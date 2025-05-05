@@ -6,7 +6,9 @@
 #include <SDL2/SDL.h>
 #include <SDL2/SDL_image.h>
 #include <SDL2/SDL_ttf.h>
+#include <SDL2/SDL_mixer.h>
 #include <bits/stdc++.h>
+
 using namespace std;
 
 class Game{
@@ -38,7 +40,6 @@ public:
 
     void bonusMoney(Uint32 now);
 
-
     // TEXT HANDLING
     void updateMoneyText();
     void reloadMainText();
@@ -55,6 +56,7 @@ public:
     // RESULT
     void gameOver(Uint32 now);
     void gameWin(Uint32 now);
+
 
 private:
     SDL_Window* window;
