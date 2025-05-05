@@ -18,6 +18,9 @@ After a few seconds, a "leech" will spawn, subtracting DRL as long as it stays o
 After a few seconds, reward you with some DRL based on how much you got.
 - Added MENU, GAMEOVER and VICTORY screen
 
+v0.6
+- Added sound effects and BGM.
+
 In this game, you have to grind for DRL and strive for the scholarship! The more you click, the more DRL you will get!
 
 How to play: Click on the gray box. Each click grants a number of DRL, based of which upgrade you are at.
@@ -29,4 +32,4 @@ References:
 
 Assisted by ChatGPT and Github Copilot.
 
-TODO: SFX
+TODO: Better game balancing
