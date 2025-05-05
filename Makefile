@@ -1,2 +1,2 @@
 all:
-	g++ -I src/include -L src/lib -o game main.cpp game.cpp TextureManager.cpp FontManager.cpp Resources.cpp Clicking.cpp UpgradeBox.cpp Mechanics.cpp TextHandling.cpp ResultScreen.cpp -lmingw32 -lSDL2main -lSDL2 -lSDL2_image -lSDL2_ttf
+	g++ -I src/include -L src/lib -o game main.cpp game.cpp TextureManager.cpp FontManager.cpp AudioManager.cpp Resources.cpp Clicking.cpp UpgradeBox.cpp Mechanics.cpp TextHandling.cpp ResultScreen.cpp -lmingw32 -lSDL2main -lSDL2 -lSDL2_image -lSDL2_ttf -lSDL2_mixer
