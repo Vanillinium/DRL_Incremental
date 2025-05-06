@@ -26,10 +26,11 @@ extern SDL_Texture* menuBackgroundTexture;
 
 //-------------------------GAME OVER------------------------------//
 extern SDL_Texture* gameOverBackgroundTexture;
-
+extern SDL_Rect gameOverBackgroundRect;
 
 //----------------------------WIN---------------------------------//
 extern SDL_Texture* winBackgroundTexture;
+extern SDL_Rect winBackgroundRect;
 
 //---------------------------MONEY ------------------------------//
 extern int money;

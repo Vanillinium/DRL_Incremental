@@ -26,10 +26,11 @@ SDL_Texture* menuBackgroundTexture = NULL;
 
 //-------------------------GAME OVER------------------------------//
 SDL_Texture* gameOverBackgroundTexture = NULL;
+SDL_Rect gameOverBackgroundRect = {0, 0, WIDTH, HEIGHT};
 
-
-//---------------------------WWIN---------------------------------//
+//----------------------------WIN---------------------------------//
 SDL_Texture* winBackgroundTexture = NULL;
+SDL_Rect winBackgroundRect = {0, 0, WIDTH, HEIGHT};
 
 
 //---------------------------MONEY ------------------------------//
@@ -44,11 +45,11 @@ int incrementIndex = 0;
 Uint32 idleTime = 0;                                                       
 Uint32 maxIdleTime = 5000;
     // DECAY
-int decaySubtractAmount = 1;
+int decaySubtractAmount = 0;
 bool naturalDecay = true;
 
 Uint32 subtractedStart = 0;
-Uint32 subtractedInterval = 2500;
+Uint32 subtractedInterval = 1500;
 
 // MECHANIC: OVERLOAD
     // CALCULATING CPS

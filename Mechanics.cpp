@@ -21,7 +21,7 @@ void Game::forceDisable(Uint32 now){
     if(!forceClickingDisabled){
         cout << "[overloadChecker] Disabled!" << endl;
         forceClickingDisabled = true;
-        disableStart = SDL_GetTicks();
+        disableStart = now;
 
         announcementText = "Overloaded!\nClicking disabled.";
 
@@ -51,7 +51,7 @@ void Game::overload(Uint32 now){
             naturalDecay = false;
         }
         clickCounterStart = now;
-        cout << "[overloadChecker] CPS : " << CPS << endl;
+        // cout << "[overloadChecker] CPS : " << CPS << endl;
         clickCounter = 0;
     }
 }

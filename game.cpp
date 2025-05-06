@@ -65,6 +65,8 @@ void Game::init(const char *title, int xpos, int ypos, int width, int height, bo
             // MUSIC
         bgMusic = Mix_LoadMUS("assets/audio/bg1.mp3");
         menuMusic = Mix_LoadMUS("assets/audio/bgmenu.mp3");
+        winMusic = Mix_LoadMUS("assets/audio/bgwin.mp3");
+        gameOverMusic = Mix_LoadMUS("assets/audio/bggameover.mp3");
 
             // SFX
         clickSound = Mix_LoadWAV("assets/audio/click.wav");
@@ -90,6 +92,29 @@ void Game::handleEvents(){ // events
         case SDL_QUIT:  // close button pressed
             isRunning = false; 
             break;
+        case SDL_KEYDOWN:
+            if (event.key.keysym.sym == SDLK_F12) {
+                static bool consoleVisible = false;
+                consoleVisible = !consoleVisible;
+
+                if (consoleVisible) {
+                    AllocConsole();
+                    freopen("CONOUT$", "w", stdout);
+                    freopen("CONOUT$", "w", stderr);
+                    cout << "[Console] Console shown via F12\n";
+                } 
+
+                else {
+                    std::cout << "[Console] Console hidden via F12\n";
+
+                    // Reset stdout/stderr về NULL trước khi đóng console
+                    fclose(stdout);
+                    fclose(stderr);
+
+                    FreeConsole();
+                }
+            }
+            break;
 
         case SDL_MOUSEBUTTONDOWN: // event: for when <mouse button> is down.
             // MENU
@@ -104,8 +129,8 @@ void Game::handleEvents(){ // events
                     incrementIndex = 0;
 
                     Uint32 maxIdleTime = 5000;
-                    decaySubtractAmount = 1;
-                    subtractedInterval = 2500;
+                    decaySubtractAmount = 0;
+                    subtractedInterval = 1500;
 
                     clickCounter = 0;
                     CPS = 0;
@@ -273,11 +298,11 @@ void Game::render(){ // renderer
     }
 
     else if(currentGameState == GAME_OVER){
-        SDL_RenderCopy(renderer, gameOverBackgroundTexture, NULL , NULL);
+        SDL_RenderCopy(renderer, gameOverBackgroundTexture, NULL , &gameOverBackgroundRect);
     }
 
     else if(currentGameState == WIN){
-        SDL_RenderCopy(renderer, winBackgroundTexture, NULL , NULL);
+        SDL_RenderCopy(renderer, winBackgroundTexture, NULL , &winBackgroundRect);
     }
 
     // REFRESH

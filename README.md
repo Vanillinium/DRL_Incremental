@@ -29,7 +29,13 @@ Inspired by Cookie Clicker and similar incremental type of games.
 
 References:
 - Let's Make Games's SDL2 Tutorial series
+- Assisted by ChatGPT and Github Copilot.
 
-Assisted by ChatGPT and Github Copilot.
+CREDITS:
+Menu BGM: DDBY - Blue Wings (From "Cafe de Touhou 2")
+Game BGM: DDBY - Sky Garden - Takayan (From "Cafe de Touhou 1")
+Win BGM: rintaro soma - 系ぎて (R3 Music Box Cover) (From "maimai DX")
+Game Over BGM: Fontainebleau - Just You (From "The NOexistenceN of you AND me")
+
 
 TODO: Better game balancing
