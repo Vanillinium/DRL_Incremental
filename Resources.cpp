@@ -24,6 +24,10 @@ SDL_Rect gameTitleRect = {WIDTH / 2 - 250, 50, 500, 200};
 
 SDL_Texture* menuBackgroundTexture = NULL;
 
+//--------------------------TUTORIAL------------------------------//
+SDL_Texture* tutorialBackgroundTexture = NULL;
+SDL_Rect tutorialBackgroundRect = {0, 0, WIDTH, HEIGHT};
+
 //-------------------------GAME OVER------------------------------//
 SDL_Texture* gameOverBackgroundTexture = NULL;
 SDL_Rect gameOverBackgroundRect = {0, 0, WIDTH, HEIGHT};

@@ -57,8 +57,6 @@ public:
     // RESULT
     void gameOver(Uint32 now);
     void gameWin(Uint32 now);
-
-
 private:
     SDL_Window* window;
     SDL_Renderer* renderer; 

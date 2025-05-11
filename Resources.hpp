@@ -7,7 +7,7 @@ extern const int HEIGHT;
 extern SDL_Color color;
 
 //-------------------------GAME STATE-----------------------------//
-enum GameState {MENU, PLAYING, GAME_OVER, WIN};
+enum GameState {MENU, TUTORIAL, PLAYING, GAME_OVER, WIN};
 extern GameState currentGameState;
 extern Uint32 resultEnterTime;
 extern const Uint32 resultDelay;
@@ -23,6 +23,10 @@ extern SDL_Texture* gameTitleTexture;
 extern SDL_Rect gameTitleRect;
 
 extern SDL_Texture* menuBackgroundTexture;
+
+//--------------------------TUTORIAL------------------------------//
+extern SDL_Texture* tutorialBackgroundTexture;
+extern SDL_Rect tutorialBackgroundRect;
 
 //-------------------------GAME OVER------------------------------//
 extern SDL_Texture* gameOverBackgroundTexture;

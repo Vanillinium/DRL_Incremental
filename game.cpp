@@ -54,10 +54,14 @@ void Game::init(const char *title, int xpos, int ypos, int width, int height, bo
         playButtonTexture = TextureManager::LoadTexture("assets/img/start_button.png", renderer);
         quitButtonTexture = TextureManager::LoadTexture("assets/img/quit_button.png", renderer);
         gameTitleTexture = TextureManager::LoadTexture("assets/img/title.png", renderer);
-        menuBackgroundTexture = TextureManager::LoadTexture("assets/img/menu_bg.png", renderer);
+        
         upgrade_box = TextureManager::LoadTexture("assets/img/upgrade_box1.png", renderer); 
         main_box = TextureManager::LoadTexture("assets/img/box.png", renderer);
         leechTexture = TextureManager::LoadTexture("assets/img/leech.png", renderer);
+
+            // BG
+        menuBackgroundTexture = TextureManager::LoadTexture("assets/img/menu_bg.png", renderer);
+        tutorialBackgroundTexture = TextureManager::LoadTexture("assets/img/tuto_main_1.png", renderer);
         bg = TextureManager::LoadTexture("assets/img/bg.jpg", renderer);
         gameOverBackgroundTexture = TextureManager::LoadTexture("assets/img/game_over.png", renderer);
         winBackgroundTexture = TextureManager::LoadTexture("assets/img/win.png", renderer);
@@ -120,9 +124,21 @@ void Game::handleEvents(){ // events
             // MENU
             if(currentGameState == MENU){
                 if(SDL_PointInRect(&mousePosition, &playButtonRect)){
-                    currentGameState = PLAYING;
+                    currentGameState = TUTORIAL;
                     
-                    // reset game state
+                    cout << "[handleEvents] Play button clicked!" << endl;
+                }
+                else if(SDL_PointInRect(&mousePosition, &quitButtonRect)){
+                    isRunning = false;
+
+                    cout << "[handleEvents] Quit button clicked!" << endl;
+                }
+            }
+
+            else if(currentGameState == TUTORIAL){
+                currentGameState = PLAYING;
+
+                // reset game state
                     money = 700;
                     displayed_DRL = (double)money / 10;
 
@@ -158,12 +174,6 @@ void Game::handleEvents(){ // events
                     Mix_HaltMusic();
                     Mix_PlayMusic(bgMusic, -1);
 
-                    cout << "[handleEvents] Play button clicked!" << endl;
-                }
-                else if(SDL_PointInRect(&mousePosition, &quitButtonRect)){
-                    isRunning = false;
-                    cout << "[handleEvents] Quit button clicked!" << endl;
-                }
             }
 
             // INGAME
@@ -266,6 +276,11 @@ void Game::render(){ // renderer
             // BUTTONS
         SDL_RenderCopy(renderer, playButtonTexture, NULL , &playButtonRect);
         SDL_RenderCopy(renderer, quitButtonTexture, NULL , &quitButtonRect);    
+    }
+
+    else if(currentGameState == TUTORIAL){
+            // BACKGROUND
+        SDL_RenderCopy(renderer, tutorialBackgroundTexture, NULL, &tutorialBackgroundRect);
     }
 
     else if(currentGameState == PLAYING){
